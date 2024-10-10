@@ -11,7 +11,7 @@ use camera::Camera;
 use golf::*;
 use graphics::Buffer;
 use math::Vec2;
-use module::Module;
+use module::{EmptyModule, Module};
 
 #[used]
 #[link_section = ".rodata.eadk_app_name"]
@@ -28,8 +28,9 @@ pub static EADK_APP_ICON: [u8; 4250] = *include_bytes!("../target/icon.nwi");
 #[no_mangle]
 pub fn main() {
     let mut buffer = Buffer::new();
-    let modules = [Module::new()];
-    let camera = Camera::new(
+    let empty_module = EmptyModule::new();
+    let modules: [&dyn Module; 1] = [&empty_module];
+    let mut camera = Camera::new(
         &modules,
         Ball {
             pos: Vec2 { x: 0., y: 0. },
@@ -38,6 +39,7 @@ pub fn main() {
     );
 
     loop {
+        camera.update(1.);
         camera.render(&mut buffer);
         buffer.render();
     }

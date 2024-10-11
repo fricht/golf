@@ -11,18 +11,27 @@ use crate::{
 const CAM_MOVE_SPEED: f32 = 0.04;
 const CLEAR_COLOR: u16 = 0x07E0;
 
-pub struct Camera<'a, 'b> {
-    pub scene: &'a mut [&'b mut dyn Module],
+pub enum GameState {
+    Moving,
+    Idle,
+    Dead,
+    Won,
+}
+
+pub struct Scene<'a, 'b> {
+    pub modules: &'a mut [&'b mut dyn Module],
     pub ball: Ball,
+    pub game_state: GameState,
     pos: Vec2,
     unit_size: f32, // px / unit
 }
 
-impl<'a, 'b> Camera<'a, 'b> {
+impl<'a, 'b> Scene<'a, 'b> {
     pub fn new(scene: &'a mut [&'b mut dyn Module], ball: Ball, unit_size: f32) -> Self {
         let unit_size = unit_size.clamp(1., 8.);
-        Camera {
-            scene,
+        Scene {
+            modules: scene,
+            game_state: GameState::Idle,
             pos: ball.pos * unit_size
                 - Vec2 {
                     x: (SCREEN_WIDTH / 2) as f32,
@@ -33,11 +42,11 @@ impl<'a, 'b> Camera<'a, 'b> {
         }
     }
 
-    pub fn update(&mut self, unit_size_request: f32) {
+    pub fn update(&mut self) {
+        let unit_size_request: f32 = 3.;
         // update the scene
         self.ball.update();
-        for m in self.scene.iter_mut() {
-            // bounding box collision check
+        for m in self.modules.iter_mut() {
             m.update(&mut self.ball);
         }
         // move the camera
@@ -59,7 +68,7 @@ impl<'a, 'b> Camera<'a, 'b> {
             rgb565: CLEAR_COLOR,
         });
         // draw modules
-        for m in self.scene.iter() {
+        for m in self.modules.iter() {
             m.render(buffer, self.pos, self.unit_size as i32);
         }
         // draw ball

@@ -29,6 +29,7 @@ impl EmptyModule {
 }
 
 impl Module for EmptyModule {
+    // AABB collision check
     fn update(&mut self, ball: &mut Ball) {
         if ball.pos.x + 1. <= self.offset.x as f32
             || ball.pos.x - 1. >= (self.offset.x + self.size.x * TILE_SIZE) as f32
@@ -37,6 +38,7 @@ impl Module for EmptyModule {
         {
             return;
         }
+        // apply drag
         ball.velocity = ball.velocity * 0.9;
     }
 

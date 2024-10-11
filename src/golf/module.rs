@@ -4,26 +4,35 @@ use crate::{
     math::{Vec2, Vec2i},
 };
 
+use super::ball::Ball;
+
 pub trait Module {
+    fn update(&mut self, ball: &mut Ball);
     fn render(&self, buffer: &mut Buffer, offset: Vec2, unit_size: i32);
 }
 
 // the size of 1 module tile : the ball have a radius of 1 (diameter of 2)
-const TILE_SIZE: i32 = 16;
+const TILE_SIZE: i32 = 8;
 
 pub struct EmptyModule {
+    offset: Vec2i,
     size: Vec2i,
 }
 
 impl EmptyModule {
-    pub fn new() -> Self {
+    pub fn new(offset: Vec2i) -> Self {
         EmptyModule {
+            offset,
             size: Vec2i { x: 2, y: 2 },
         }
     }
 }
 
 impl Module for EmptyModule {
+    fn update(&mut self, ball: &mut Ball) {
+        ball.velocity = ball.velocity * 0.9;
+    }
+
     fn render(&self, buffer: &mut Buffer, offset: Vec2, unit_size: i32) {
         for x in 0..self.size.x {
             for y in 0..self.size.y {

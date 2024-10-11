@@ -10,7 +10,7 @@ use ball::Ball;
 use camera::Camera;
 use golf::*;
 use graphics::Buffer;
-use math::Vec2;
+use math::{Vec2, Vec2i};
 use module::{EmptyModule, Module};
 
 #[used]
@@ -28,18 +28,20 @@ pub static EADK_APP_ICON: [u8; 4250] = *include_bytes!("../target/icon.nwi");
 #[no_mangle]
 pub fn main() {
     let mut buffer = Buffer::new();
-    let empty_module = EmptyModule::new();
-    let modules: [&dyn Module; 1] = [&empty_module];
+    let mut empty_module = EmptyModule::new(Vec2i { x: 0, y: 0 });
+    let mut modules: [&mut dyn Module; 1] = [&mut empty_module];
     let mut camera = Camera::new(
-        &modules,
+        &mut modules,
         Ball {
             pos: Vec2 { x: 0., y: 0. },
             height: 0.,
+            velocity: Vec2 { x: 1., y: 2.0 },
         },
+        3.,
     );
 
     loop {
-        camera.update(1.);
+        camera.update(3.);
         camera.render(&mut buffer);
         buffer.render();
     }

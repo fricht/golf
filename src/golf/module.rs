@@ -15,8 +15,8 @@ pub trait Module {
 const TILE_SIZE: i32 = 8;
 
 pub struct EmptyModule {
-    offset: Vec2i,
-    size: Vec2i,
+    pub offset: Vec2i,
+    pub size: Vec2i,
 }
 
 impl EmptyModule {
@@ -30,6 +30,13 @@ impl EmptyModule {
 
 impl Module for EmptyModule {
     fn update(&mut self, ball: &mut Ball) {
+        if ball.pos.x + 1. <= self.offset.x as f32
+            || ball.pos.x - 1. >= (self.offset.x + self.size.x * TILE_SIZE) as f32
+            || ball.pos.y + 1. <= self.offset.y as f32
+            || ball.pos.y - 1. >= (self.offset.y + self.size.y * TILE_SIZE) as f32
+        {
+            return;
+        }
         ball.velocity = ball.velocity * 0.9;
     }
 

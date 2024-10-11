@@ -1,6 +1,6 @@
 use crate::{eadk::Color, graphics::Buffer, math::Vec2};
 
-const BALL_MASS: f32 = 1.;
+const BALL_MASS: f32 = 10.;
 
 pub struct Ball {
     pub pos: Vec2,

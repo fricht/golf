@@ -37,6 +37,7 @@ impl<'a, 'b> Camera<'a, 'b> {
         // update the scene
         self.ball.update();
         for m in self.scene.iter_mut() {
+            // bounding box collision check
             m.update(&mut self.ball);
         }
         // move the camera

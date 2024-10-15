@@ -6,13 +6,20 @@ use crate::{
 
 use super::ball::Ball;
 
+pub enum BallInteraction {
+    OutOfRegion,
+    None,
+    Dead,
+    Win,
+}
+
 pub trait Module {
-    fn update(&mut self, ball: &mut Ball);
+    fn update(&mut self, ball: &mut Ball) -> BallInteraction;
     fn render(&self, buffer: &mut Buffer, offset: Vec2, unit_size: i32);
 }
 
 // the size of 1 module tile : the ball have a radius of 1 (diameter of 2)
-const TILE_SIZE: i32 = 8;
+pub const TILE_SIZE: i32 = 8;
 
 pub struct EmptyModule {
     pub offset: Vec2i,
@@ -30,16 +37,17 @@ impl EmptyModule {
 
 impl Module for EmptyModule {
     // AABB collision check
-    fn update(&mut self, ball: &mut Ball) {
+    fn update(&mut self, ball: &mut Ball) -> BallInteraction {
         if ball.pos.x + 1. <= self.offset.x as f32
             || ball.pos.x - 1. >= (self.offset.x + self.size.x * TILE_SIZE) as f32
             || ball.pos.y + 1. <= self.offset.y as f32
             || ball.pos.y - 1. >= (self.offset.y + self.size.y * TILE_SIZE) as f32
         {
-            return;
+            return BallInteraction::OutOfRegion;
         }
         // apply drag
-        ball.velocity = ball.velocity * 0.9;
+        ball.velocity = ball.velocity * 0.98;
+        BallInteraction::None
     }
 
     fn render(&self, buffer: &mut Buffer, offset: Vec2, unit_size: i32) {
@@ -47,8 +55,10 @@ impl Module for EmptyModule {
             for y in 0..self.size.y {
                 buffer.push_rect_uniform(
                     Rect::screen_space_culling(
-                        x * unit_size * TILE_SIZE - offset.x as i32,
-                        y * unit_size * TILE_SIZE - offset.y as i32,
+                        x * unit_size * TILE_SIZE - offset.x as i32
+                            + self.offset.x as i32 * unit_size,
+                        y * unit_size * TILE_SIZE - offset.y as i32
+                            + self.offset.y as i32 * unit_size,
                         unit_size * TILE_SIZE,
                         unit_size * TILE_SIZE,
                     ),

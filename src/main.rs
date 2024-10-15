@@ -11,7 +11,7 @@ use game::{Game, GameState};
 use golf::*;
 use graphics::Buffer;
 use math::{Vec2, Vec2i};
-use module::{EmptyModule, Module};
+use module::{EmptyModule, Module, TILE_SIZE};
 use scene::Scene;
 
 #[used]
@@ -29,17 +29,26 @@ pub static EADK_APP_ICON: [u8; 4250] = *include_bytes!("../target/icon.nwi");
 #[no_mangle]
 pub fn main() {
     let mut buffer = Buffer::new();
-    let mut empty_module = EmptyModule::new(Vec2i { x: 0, y: 0 });
-    let mut modules: [&mut dyn Module; 1] = [&mut empty_module];
-    let mut scene = Scene::new(
-        &mut modules,
-        Ball {
-            pos: Vec2 { x: 0., y: 0. },
-            height: 0.,
-            velocity: Vec2 { x: 1., y: 2.0 },
-        },
-        3.,
-    );
+    let mut empty_module1 = EmptyModule::new(Vec2i { x: 0, y: 0 });
+    let mut empty_module2 = EmptyModule::new(Vec2i {
+        x: 2 * TILE_SIZE,
+        y: 0,
+    });
+    let mut empty_module3 = EmptyModule::new(Vec2i {
+        x: 0,
+        y: 2 * TILE_SIZE,
+    });
+    let mut empty_module4 = EmptyModule::new(Vec2i {
+        x: 2 * TILE_SIZE,
+        y: 2 * TILE_SIZE,
+    });
+    let mut modules: [&mut dyn Module; 4] = [
+        &mut empty_module1,
+        &mut empty_module2,
+        &mut empty_module3,
+        &mut empty_module4,
+    ];
+    let mut scene = Scene::new(&mut modules, Vec2 { x: 1., y: 1. }, 3.);
     let mut game = Game {
         state: GameState::InGame(&mut scene),
     };

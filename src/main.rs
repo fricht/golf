@@ -41,11 +41,11 @@ pub fn main() {
         x: 2 * TILE_SIZE,
         y: 2 * TILE_SIZE,
     });
-    let mut modules: [&mut dyn Module; 4] = [
-        &mut empty_module1,
-        &mut empty_module2,
-        &mut empty_module3,
-        &mut empty_module4,
+    let mut modules = [
+        &mut empty_module1 as &mut dyn Module,
+        &mut empty_module2 as &mut dyn Module,
+        &mut empty_module3 as &mut dyn Module,
+        &mut empty_module4 as &mut dyn Module,
     ];
     let mut scene = Scene::new(&mut modules, Vec2 { x: 1., y: 1. }, 3.);
     let mut game = Game {

@@ -2,3 +2,13 @@
 name = "RustApp"
 version = "0.1.0"
 edition = "2021"
+
+[profile.dev]
+opt-level = 3
+debug = false
+overflow-checks = false
+
+[profile.release]
+opt-level = 3
+debug = false
+overflow-checks = false

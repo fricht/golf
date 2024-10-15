@@ -1,6 +1,5 @@
-use crate::{eadk::Color, graphics::Buffer};
-
 use super::scene::Scene;
+use crate::{eadk::Color, graphics::Buffer};
 
 pub enum GameState<'a, 'b, 'c> {
     InMenu,

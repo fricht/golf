@@ -1,10 +1,9 @@
+use super::ball::Ball;
 use crate::{
     eadk::{Color, Rect},
     graphics::Buffer,
     math::{Vec2, Vec2i},
 };
-
-use super::ball::Ball;
 
 pub enum BallInteraction {
     OutOfRegion,

@@ -2,6 +2,7 @@
 #![no_main]
 
 pub mod eadk;
+pub mod escher;
 pub mod golf;
 pub mod graphics;
 pub mod math;

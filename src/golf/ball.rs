@@ -2,7 +2,7 @@ use crate::{eadk::Color, graphics::Buffer, math::Vec2};
 
 use super::module::TILE_SIZE;
 
-const BALL_MASS: f32 = 10.;
+pub const BALL_MASS: f32 = 10.;
 pub const BALL_STOP_THRESHOLD: f32 = 0.1;
 const BALL_LAUNCH_SPEED: f32 = -1.2;
 

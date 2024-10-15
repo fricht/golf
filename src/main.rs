@@ -6,7 +6,6 @@ pub mod golf;
 pub mod graphics;
 pub mod math;
 
-use ball::Ball;
 use game::{Game, GameState};
 use golf::*;
 use graphics::Buffer;

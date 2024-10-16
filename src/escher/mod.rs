@@ -1,4 +1,5 @@
 pub mod components;
+pub mod text;
 
 use crate::{graphics::Buffer, math::Vec2i};
 

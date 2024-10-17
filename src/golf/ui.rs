@@ -20,18 +20,22 @@ impl<'a> Menu<'a> {
             selected: true,
         };
         let mut container = BoxContainer {
-            child: &mut label as *mut dyn Component,
+            child: &mut label,
             margin_top: MarginType::Margin(10),
             margin_left: MarginType::Margin(10),
             margin_bottom: MarginType::Extend,
             margin_right: MarginType::Extend,
         };
         let menu = Menu {
-            child: &mut container,
+            child: unsafe {
+                let container_ptr: *mut BoxContainer = &mut container;
+                core::mem::forget(container);
+                &mut *container_ptr as &'static mut dyn Component
+            },
         };
         core::mem::forget(txt);
         core::mem::forget(label);
-        core::mem::forget(container);
+        // core::mem::forget(container);
         menu
     }
 }

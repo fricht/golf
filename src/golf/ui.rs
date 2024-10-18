@@ -3,7 +3,7 @@ use crate::{
     escher::{
         components::{BoxContainer, MarginType},
         text::Label,
-        Component, TopLevel, UiEvent,
+        Component, TopLevel,
     },
     math::Vec2i,
 };
@@ -16,11 +16,19 @@ impl<'a> Menu<'a> {
     pub fn new() -> Self {
         let txt = [0, 0, 0, 0, 0];
         let mut label = Label {
-            text: &txt,
+            text: unsafe {
+                let txt_ptr: *const [u8] = &txt;
+                &*txt_ptr as &'static [u8]
+            },
             selected: true,
         };
+        // core::mem::forget(txt);
         let mut container = BoxContainer {
-            child: &mut label,
+            child: unsafe {
+                let label_ptr: *mut Label = &mut label;
+                core::mem::forget(label);
+                &mut *label_ptr as &'static mut dyn Component
+            },
             margin_top: MarginType::Margin(10),
             margin_left: MarginType::Margin(10),
             margin_bottom: MarginType::Extend,
@@ -33,16 +41,13 @@ impl<'a> Menu<'a> {
                 &mut *container_ptr as &'static mut dyn Component
             },
         };
-        core::mem::forget(txt);
-        core::mem::forget(label);
-        // core::mem::forget(container);
         menu
     }
 }
 
 impl<'a> TopLevel for Menu<'a> {
     fn update(&mut self) {
-        self.child.update(UiEvent::None);
+        // self.child.update(UiEvent::None);
         let keys = KeyboardState::scan();
         if keys.key_down(Key::Exe) {
             todo!("launch level")

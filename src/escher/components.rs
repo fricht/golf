@@ -13,17 +13,17 @@ pub enum MarginType {
     Extend, // draw scree size
 }
 
-pub struct BoxContainer {
-    pub child: *mut dyn Component,
+pub struct BoxContainer<'a> {
+    pub child: &'a mut dyn Component,
     pub margin_top: MarginType,
     pub margin_bottom: MarginType,
     pub margin_left: MarginType,
     pub margin_right: MarginType,
 }
 
-impl BoxContainer {
+impl<'a> BoxContainer<'a> {
     pub fn new(
-        child: *mut dyn Component,
+        child: &'a mut dyn Component,
         margin_top: MarginType,
         margin_bottom: MarginType,
         margin_left: MarginType,
@@ -39,9 +39,9 @@ impl BoxContainer {
     }
 }
 
-impl Component for BoxContainer {
+impl<'a> Component for BoxContainer<'a> {
     fn requested_size(&self) -> Vec2i {
-        let child_size = unsafe { (*self.child).requested_size() };
+        let child_size = (*self.child).requested_size();
         let x = match (&self.margin_left, &self.margin_right) {
             (MarginType::Margin(m1), MarginType::Margin(m2)) => {
                 child_size.x + *m1 as i32 + *m2 as i32
@@ -58,11 +58,11 @@ impl Component for BoxContainer {
     }
 
     fn update(&mut self, signal: UiEvent) -> UiEvent {
-        unsafe { (*self.child).update(signal) }
+        (*self.child).update(signal)
     }
 
     fn render(&self, buffer: &mut Buffer, offset: Vec2i) {
-        let child_size = unsafe { (*self.child).requested_size() };
+        let child_size = (*self.child).requested_size();
         let mut child_offset = Vec2i { x: 0, y: 0 };
         let size_x;
         match (&self.margin_left, &self.margin_right) {
@@ -105,23 +105,23 @@ impl Component for BoxContainer {
         buffer.push_rect_uniform(
             Rect::screen_space_culling(offset.x, offset.y, size_x as i32, size_y as i32),
             Color {
-                rgb565: if unsafe { (*self.child).get_selected() } {
+                rgb565: if (*self.child).get_selected() {
                     SELECT_COLOR
                 } else {
                     IDLE_COLOR
                 },
             },
         );
-        unsafe { (*self.child).render(buffer, offset + child_offset) };
+        (*self.child).render(buffer, offset + child_offset);
     }
 
     fn set_selected(&mut self, selected: bool) {
         // forward select state
-        unsafe { (*self.child).set_selected(selected) };
+        (*self.child).set_selected(selected);
     }
 
     fn get_selected(&self) -> bool {
         // forward select state
-        unsafe { (*self.child).get_selected() }
+        (*self.child).get_selected()
     }
 }

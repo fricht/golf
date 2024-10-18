@@ -13,6 +13,7 @@ use graphics::Buffer;
 use math::{Vec2, Vec2i};
 use module::{EmptyModule, Module, TILE_SIZE};
 use scene::Scene;
+use ui::Menu;
 
 #[used]
 #[link_section = ".rodata.eadk_app_name"]
@@ -49,8 +50,9 @@ pub fn main() {
         &mut empty_module4 as &mut dyn Module,
     ];
     let mut scene = Scene::new(&mut modules, Vec2 { x: 1., y: 1. }, 3.);
+    let menu = Menu::new();
     let mut game = Game {
-        state: GameState::InGame(&mut scene),
+        state: GameState::InMenu(menu),
     };
     loop {
         game.update();

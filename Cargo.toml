@@ -7,8 +7,13 @@ edition = "2021"
 opt-level = 3
 debug = false
 overflow-checks = false
+panic = "abort"
 
 [profile.release]
 opt-level = 3
 debug = false
 overflow-checks = false
+panic = "abort"
+
+[dependencies]
+embedded-alloc = "0.6.0"

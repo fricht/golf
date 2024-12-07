@@ -1,3 +1,4 @@
+use crate::alloc::boxed::Box;
 use crate::{
     eadk::input::{Key, KeyboardState},
     escher::{
@@ -8,44 +9,32 @@ use crate::{
     math::Vec2i,
 };
 
-pub struct Menu<'a> {
-    child: &'a mut dyn Component,
+pub struct Menu {
+    child: Box<dyn Component>,
 }
 
-impl<'a> Menu<'a> {
+impl Menu {
     pub fn new() -> Self {
         let txt = [0, 0, 0, 0, 0];
-        let mut label = Label {
-            text: unsafe {
-                let txt_ptr: *const [u8] = &txt;
-                &*txt_ptr as &'static [u8]
-            },
+        let label = Label {
+            text: Box::new(txt),
             selected: true,
         };
-        // core::mem::forget(txt);
-        let mut container = BoxContainer {
-            child: unsafe {
-                let label_ptr: *mut Label = &mut label;
-                core::mem::forget(label);
-                &mut *label_ptr as &'static mut dyn Component
-            },
+        let container = BoxContainer {
+            child: Box::new(label),
             margin_top: MarginType::Margin(10),
             margin_left: MarginType::Margin(10),
             margin_bottom: MarginType::Extend,
             margin_right: MarginType::Extend,
         };
         let menu = Menu {
-            child: unsafe {
-                let container_ptr: *mut BoxContainer = &mut container;
-                core::mem::forget(container);
-                &mut *container_ptr as &'static mut dyn Component
-            },
+            child: Box::new(container),
         };
         menu
     }
 }
 
-impl<'a> TopLevel for Menu<'a> {
+impl TopLevel for Menu {
     fn update(&mut self) {
         // self.child.update(UiEvent::None);
         let keys = KeyboardState::scan();

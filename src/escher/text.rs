@@ -1,4 +1,5 @@
 use super::{Component, UiEvent};
+use crate::alloc::boxed::Box;
 use crate::{
     eadk::{display::SCREEN_HEIGHT, Color, Rect},
     graphics::Buffer,
@@ -52,12 +53,12 @@ fn get_char_data(char: &u8) -> &[Color] {
     &CHARS[(i * CHAR_SIZE)..(i + 1 * CHAR_SIZE)]
 }
 
-pub struct Label<'a> {
-    pub text: &'a [u8],
+pub struct Label {
+    pub text: Box<[u8]>,
     pub selected: bool,
 }
 
-impl<'a> Component for Label<'a> {
+impl Component for Label {
     fn update(&mut self, signal: UiEvent) -> UiEvent {
         signal
     }

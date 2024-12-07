@@ -1,4 +1,5 @@
 use super::{Component, UiEvent, IDLE_COLOR, SELECT_COLOR};
+use crate::alloc::boxed::Box;
 use crate::{
     eadk::{
         display::{SCREEN_HEIGHT, SCREEN_WIDTH},
@@ -13,17 +14,17 @@ pub enum MarginType {
     Extend, // draw scree size
 }
 
-pub struct BoxContainer<'a> {
-    pub child: &'a mut dyn Component,
+pub struct BoxContainer {
+    pub child: Box<dyn Component>,
     pub margin_top: MarginType,
     pub margin_bottom: MarginType,
     pub margin_left: MarginType,
     pub margin_right: MarginType,
 }
 
-impl<'a> BoxContainer<'a> {
+impl BoxContainer {
     pub fn new(
-        child: &'a mut dyn Component,
+        child: Box<dyn Component>,
         margin_top: MarginType,
         margin_bottom: MarginType,
         margin_left: MarginType,
@@ -39,9 +40,9 @@ impl<'a> BoxContainer<'a> {
     }
 }
 
-impl<'a> Component for BoxContainer<'a> {
+impl Component for BoxContainer {
     fn requested_size(&self) -> Vec2i {
-        let child_size = (*self.child).requested_size();
+        let child_size = self.child.requested_size();
         let x = match (&self.margin_left, &self.margin_right) {
             (MarginType::Margin(m1), MarginType::Margin(m2)) => {
                 child_size.x + *m1 as i32 + *m2 as i32
@@ -58,11 +59,11 @@ impl<'a> Component for BoxContainer<'a> {
     }
 
     fn update(&mut self, signal: UiEvent) -> UiEvent {
-        (*self.child).update(signal)
+        self.child.update(signal)
     }
 
     fn render(&self, buffer: &mut Buffer, offset: Vec2i) {
-        let child_size = (*self.child).requested_size();
+        let child_size = self.child.requested_size();
         let mut child_offset = Vec2i { x: 0, y: 0 };
         let size_x;
         match (&self.margin_left, &self.margin_right) {
@@ -105,23 +106,23 @@ impl<'a> Component for BoxContainer<'a> {
         buffer.push_rect_uniform(
             Rect::screen_space_culling(offset.x, offset.y, size_x as i32, size_y as i32),
             Color {
-                rgb565: if (*self.child).get_selected() {
+                rgb565: if self.child.get_selected() {
                     SELECT_COLOR
                 } else {
                     IDLE_COLOR
                 },
             },
         );
-        (*self.child).render(buffer, offset + child_offset);
+        self.child.render(buffer, offset + child_offset);
     }
 
     fn set_selected(&mut self, selected: bool) {
         // forward select state
-        (*self.child).set_selected(selected);
+        self.child.set_selected(selected);
     }
 
     fn get_selected(&self) -> bool {
         // forward select state
-        (*self.child).get_selected()
+        self.child.get_selected()
     }
 }

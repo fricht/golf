@@ -1,7 +1,28 @@
+use crate::escher::text::get_char_data;
+use core::panic::PanicInfo;
+use display::{push_rect, SCREEN_HEIGHT, SCREEN_WIDTH};
+
 // heap
 extern "C" {
     pub static _heap_start: usize;
     pub static _heap_end: usize;
+}
+// what am i doing ...
+#[no_mangle]
+pub extern "C" fn _critical_section_1_0_acquire() {
+    // Do nothing
+}
+#[no_mangle]
+pub extern "C" fn _critical_section_1_0_release() {
+    // Do nothing
+}
+#[no_mangle]
+pub extern "C" fn __aeabi_unwind_cpp_pr0() {
+    // Do nothing
+}
+#[alloc_error_handler]
+fn alloc_error_handler(layout: core::alloc::Layout) -> ! {
+    panic!("allocation error: {:?}", layout);
 }
 
 #[repr(C)]
@@ -420,12 +441,9 @@ pub mod input {
     }
 }
 
-use core::panic::PanicInfo;
-
-use display::{SCREEN_HEIGHT, SCREEN_WIDTH};
-
 #[panic_handler]
-fn panic(_panic: &PanicInfo<'_>) -> ! {
+fn panic(panic_info: &PanicInfo<'_>) -> ! {
+    // TODO : ths is trash. Do a text renderer to display the actual err message.
     display::push_rect_uniform(
         Rect {
             x: 0,
@@ -435,5 +453,22 @@ fn panic(_panic: &PanicInfo<'_>) -> ! {
         },
         Color { rgb565: 0xF800 },
     );
+    if let Some(msg) = panic_info.message().as_str() {
+        let mut char: [Color; 8] = [Color { rgb565: 0 }; 8];
+        let mut i = 0;
+        for c in msg.chars() {
+            let c = c as u8;
+            push_rect(
+                Rect {
+                    x: i * 6 + 10,
+                    y: 10,
+                    width: 5,
+                    height: 10,
+                },
+                get_char_data(&c),
+            );
+            i += 1;
+        }
+    }
     loop {}
 }

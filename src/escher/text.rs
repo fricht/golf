@@ -6,12 +6,337 @@ use crate::{
     math::Vec2i,
 };
 
+const W: u16 = 0xFFFF;
+const B: u16 = 0x0;
+
+const CHARS_RAW_DATA: [u16; 29 * CHAR_SIZE] = [
+    // NULL
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    // a
+    B, B, W, B, B, //
+    B, W, B, W, B, //
+    B, W, B, W, B, //
+    B, W, B, W, B, //
+    W, W, W, W, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    // b
+    W, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, W, W, W, B, //
+    // c
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // d
+    W, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, W, W, W, B, //
+    // e
+    W, W, W, W, W, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, W, W, W, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, W, W, W, W, //
+    // f
+    W, W, W, W, W, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, W, W, W, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    // g
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, W, W, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // h
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, W, W, W, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    // i
+    W, W, W, W, W, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    W, W, W, W, W, //
+    // j
+    W, W, W, W, W, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    W, W, B, B, B, //
+    // k
+    W, B, B, B, W, //
+    W, B, B, W, B, //
+    W, B, W, B, B, //
+    W, B, W, B, B, //
+    W, W, B, B, B, //
+    W, B, W, B, B, //
+    W, B, W, B, B, //
+    W, B, B, W, B, //
+    W, B, B, W, B, //
+    W, B, B, B, W, //
+    // l
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, W, W, W, W, //
+    // m
+    W, B, B, B, W, //
+    W, W, B, W, W, //
+    W, W, B, W, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    // n
+    W, W, B, B, W, //
+    W, W, B, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, B, W, W, //
+    W, B, B, W, W, //
+    // o
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // p
+    W, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, W, W, W, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    // q
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    B, W, W, W, B, //
+    // r
+    W, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, W, W, W, B, //
+    W, B, B, B, B, //
+    W, W, B, B, B, //
+    W, B, W, B, B, //
+    W, B, B, W, B, //
+    W, B, B, B, W, //
+    // s
+    B, W, W, W, W, //
+    W, B, B, B, B, //
+    B, W, B, B, B, //
+    B, W, B, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, B, W, B, //
+    B, B, B, W, B, //
+    B, B, B, B, W, //
+    W, W, W, W, W, //
+    // t
+    W, W, W, W, W, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    // u
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // v
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, B, W, B, //
+    B, W, B, W, B, //
+    B, W, B, W, B, //
+    B, W, B, W, B, //
+    B, W, B, W, B, //
+    B, B, W, B, B, //
+    // w
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    B, W, B, W, B, //
+    // x
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, B, W, B, //
+    B, W, B, W, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, W, B, W, B, //
+    B, W, B, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    // y
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, B, W, B, //
+    B, W, B, W, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    // z
+    W, W, W, W, W, //
+    W, B, B, B, B, //
+    B, W, B, B, B, //
+    B, W, B, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, B, W, B, //
+    B, B, B, W, B, //
+    B, B, B, B, W, //
+    W, W, W, W, W, //
+    // _
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    // :
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+];
+
 const CHAR_COLORKEY: Color = Color { rgb565: 0xFFFF };
 const CHAR_SIZE: usize = 5 * 10;
-const CHARS: [Color; 27 * CHAR_SIZE] = build_colors([0; 27 * CHAR_SIZE]);
+const CHARS: [Color; 29 * CHAR_SIZE] = build_colors(CHARS_RAW_DATA);
 
-const fn build_colors(data: [u16; 27 * CHAR_SIZE]) -> [Color; 27 * CHAR_SIZE] {
-    let mut colors = [Color { rgb565: 0 }; 27 * CHAR_SIZE];
+const fn build_colors(data: [u16; 29 * CHAR_SIZE]) -> [Color; 29 * CHAR_SIZE] {
+    let mut colors = [Color { rgb565: 0 }; 29 * CHAR_SIZE];
     let mut i = 0;
     while i < data.len() {
         colors[i] = Color { rgb565: data[i] };
@@ -20,37 +345,39 @@ const fn build_colors(data: [u16; 27 * CHAR_SIZE]) -> [Color; 27 * CHAR_SIZE] {
     colors
 }
 
-fn get_char_data(char: &u8) -> &[Color] {
+pub fn get_char_data(char: &u8) -> &[Color] {
     let i = match char {
-        b'a' => 1,
-        b'b' => 2,
-        b'c' => 3,
-        b'd' => 4,
-        b'e' => 5,
-        b'f' => 6,
-        b'g' => 7,
-        b'h' => 8,
-        b'i' => 9,
-        b'j' => 10,
-        b'k' => 11,
-        b'l' => 12,
-        b'm' => 13,
-        b'n' => 14,
-        b'o' => 15,
-        b'p' => 16,
-        b'q' => 17,
-        b'r' => 18,
-        b's' => 19,
-        b't' => 20,
-        b'u' => 21,
-        b'v' => 22,
-        b'w' => 23,
-        b'x' => 24,
-        b'y' => 25,
-        b'z' => 26,
+        b'a' | b'A' => 1,
+        b'b' | b'B' => 2,
+        b'c' | b'C' => 3,
+        b'd' | b'D' => 4,
+        b'e' | b'E' => 5,
+        b'f' | b'F' => 6,
+        b'g' | b'G' => 7,
+        b'h' | b'H' => 8,
+        b'i' | b'I' => 9,
+        b'j' | b'J' => 10,
+        b'k' | b'K' => 11,
+        b'l' | b'L' => 12,
+        b'm' | b'M' => 13,
+        b'n' | b'N' => 14,
+        b'o' | b'O' => 15,
+        b'p' | b'P' => 16,
+        b'q' | b'Q' => 17,
+        b'r' | b'R' => 18,
+        b's' | b'S' => 19,
+        b't' | b'T' => 20,
+        b'u' | b'U' => 21,
+        b'v' | b'V' => 22,
+        b'w' | b'W' => 23,
+        b'x' | b'X' => 24,
+        b'y' | b'Y' => 25,
+        b'z' | b'Z' => 26,
+        b' ' => 27,
+        b':' => 28,
         _ => 0,
     };
-    &CHARS[(i * CHAR_SIZE)..(i + 1 * CHAR_SIZE)]
+    &CHARS[(i * CHAR_SIZE)..((i + 1) * CHAR_SIZE)]
 }
 
 pub struct Label {

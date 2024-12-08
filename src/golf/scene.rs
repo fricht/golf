@@ -3,6 +3,7 @@ use super::{
     module::{BallInteraction, Module},
 };
 use crate::{
+    alloc::{boxed::Box, vec::Vec},
     eadk::{
         display::{SCREEN_HEIGHT, SCREEN_WIDTH},
         input::{Key, KeyboardState},
@@ -22,8 +23,8 @@ pub enum GameState {
     Won,
 }
 
-pub struct Scene<'a, 'b> {
-    pub modules: &'a mut [&'b mut dyn Module],
+pub struct Scene {
+    pub modules: Vec<Box<dyn Module>>,
     pub game_state: GameState,
     cam_pos: Vec2,
     pub spawn_pos: Vec2,
@@ -32,8 +33,8 @@ pub struct Scene<'a, 'b> {
     pub attempts: u8,
 }
 
-impl<'a, 'b> Scene<'a, 'b> {
-    pub fn new(scene: &'a mut [&'b mut dyn Module], spawn_pos: Vec2, unit_size: f32) -> Self {
+impl Scene {
+    pub fn new(scene: Vec<Box<dyn Module>>, spawn_pos: Vec2, unit_size: f32) -> Self {
         let unit_size = unit_size.clamp(1., 8.);
         let ball = Ball::new(spawn_pos);
         Scene {

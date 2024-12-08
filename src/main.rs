@@ -2,6 +2,7 @@
 #![no_main]
 #![feature(alloc_error_handler)]
 
+#[macro_use]
 extern crate alloc;
 
 pub mod eadk;
@@ -10,6 +11,7 @@ pub mod golf;
 pub mod graphics;
 pub mod math;
 
+use alloc::boxed::Box;
 use eadk::{_heap_end, _heap_start};
 use embedded_alloc::TlsfHeap as Heap;
 use game::{Game, GameState};
@@ -35,30 +37,11 @@ pub static EADK_APP_ICON: [u8; 4250] = [0; 4250]; // *include_bytes!("../target/
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
 
-// what am i doing ...
-#[no_mangle]
-pub extern "C" fn _critical_section_1_0_acquire() {
-    // Do nothing if you don't need concurrency protection
-}
-#[no_mangle]
-pub extern "C" fn _critical_section_1_0_release() {
-    // Do nothing if you don't need concurrency protection
-}
-#[no_mangle]
-pub extern "C" fn __aeabi_unwind_cpp_pr0() {
-    // Do nothing if you don't need concurrency protection
-}
-#[alloc_error_handler]
-fn alloc_error_handler(layout: core::alloc::Layout) -> ! {
-    // You can define custom logic here, like logging the error or resetting the device.
-    panic!("allocation error: {:?}", layout);
-}
-
 #[no_mangle]
 pub fn main() {
     // initialize the memory allocator
     unsafe {
-        const REQUESTED_HEAP_SIZE: usize = usize::pow(2, 4);
+        const REQUESTED_HEAP_SIZE: usize = 2 << 8;
         let heap_size = _heap_end - _heap_start;
         if REQUESTED_HEAP_SIZE > heap_size {
             panic!("Error : trying to allocate too muck heap.");
@@ -68,26 +51,26 @@ pub fn main() {
 
     let mut buffer = Buffer::new();
 
-    let mut empty_module1 = EmptyModule::new(Vec2i { x: 0, y: 0 });
-    let mut empty_module2 = EmptyModule::new(Vec2i {
+    let empty_module1 = EmptyModule::new(Vec2i { x: 0, y: 0 });
+    let empty_module2 = EmptyModule::new(Vec2i {
         x: 2 * TILE_SIZE,
         y: 0,
     });
-    let mut empty_module3 = EmptyModule::new(Vec2i {
+    let empty_module3 = EmptyModule::new(Vec2i {
         x: 0,
         y: 2 * TILE_SIZE,
     });
-    let mut empty_module4 = EmptyModule::new(Vec2i {
+    let empty_module4 = EmptyModule::new(Vec2i {
         x: 2 * TILE_SIZE,
         y: 2 * TILE_SIZE,
     });
-    let mut modules = [
-        &mut empty_module1 as &mut dyn Module,
-        &mut empty_module2 as &mut dyn Module,
-        &mut empty_module3 as &mut dyn Module,
-        &mut empty_module4 as &mut dyn Module,
+    let modules = vec![
+        Box::new(empty_module1) as Box<dyn Module>,
+        Box::new(empty_module2),
+        Box::new(empty_module3),
+        Box::new(empty_module4),
     ];
-    let scene = Scene::new(&mut modules, Vec2 { x: 1., y: 1. }, 3.);
+    let scene = Scene::new(modules, Vec2 { x: 1., y: 1. }, 3.);
 
     let mut game = Game {
         state: GameState::InGame(scene),

@@ -1,16 +1,16 @@
 use super::{scene::Scene, ui::Menu};
 use crate::{eadk::Color, escher::TopLevel, graphics::Buffer};
 
-pub enum GameState<'a, 'b> {
+pub enum GameState {
     InMenu(Menu),
-    InGame(Scene<'a, 'b>),
+    InGame(Scene),
 }
 
-pub struct Game<'a, 'b> {
-    pub state: GameState<'a, 'b>,
+pub struct Game {
+    pub state: GameState,
 }
 
-impl<'a, 'b> Game<'a, 'b> {
+impl Game {
     pub fn update(&mut self) {
         match &mut self.state {
             GameState::InMenu(menu) => {
@@ -24,7 +24,7 @@ impl<'a, 'b> Game<'a, 'b> {
 
     pub fn render(&self, buffer: &mut Buffer) {
         match &self.state {
-            GameState::InMenu(menu) => {
+            GameState::InMenu(_menu) => {
                 buffer.clear(Color { rgb565: 0x001F });
                 // menu.render(buffer);
             }

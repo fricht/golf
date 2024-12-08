@@ -1,3 +1,9 @@
+// heap
+extern "C" {
+    pub static _heap_start: u8;
+    pub static _heap_end: u8;
+}
+
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Color {

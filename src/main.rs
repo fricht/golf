@@ -10,6 +10,7 @@ pub mod golf;
 pub mod graphics;
 pub mod math;
 
+use eadk::{_heap_end, _heap_start};
 use embedded_alloc::TlsfHeap as Heap;
 use game::{Game, GameState};
 use golf::*;
@@ -34,33 +35,14 @@ pub static EADK_APP_ICON: [u8; 4250] = *include_bytes!("../target/icon.nwi");
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
 
-// what am i doing ...
-#[no_mangle]
-pub extern "C" fn _critical_section_1_0_acquire() {
-    // Do nothing if you don't need concurrency protection
-}
-
-#[no_mangle]
-pub extern "C" fn _critical_section_1_0_release() {
-    // Do nothing if you don't need concurrency protection
-}
-
-#[alloc_error_handler]
-fn alloc_error_handler(layout: core::alloc::Layout) -> ! {
-    // You can define custom logic here, like logging the error or resetting the device.
-    panic!("allocation error: {:?}", layout);
-}
-
 #[no_mangle]
 pub fn main() {
     // initialize the memory allocator
-    {
-        use core::mem::MaybeUninit;
-        const HEAP_SIZE: usize = 1024;
-        static mut HEAP_MEM: [MaybeUninit<u8>; HEAP_SIZE] = [MaybeUninit::uninit(); HEAP_SIZE];
-        unsafe {
-            HEAP.init(HEAP_MEM.as_ptr() as usize, HEAP_SIZE);
-        }
+    unsafe {
+        let heap_start = &_heap_start as *const u8 as usize;
+        let heap_end = &_heap_end as *const u8 as usize;
+        let heap_size = heap_end - heap_start;
+        HEAP.init(heap_start, heap_size);
     }
 
     let mut buffer = Buffer::new();

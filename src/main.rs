@@ -58,10 +58,12 @@ fn alloc_error_handler(layout: core::alloc::Layout) -> ! {
 pub fn main() {
     // initialize the memory allocator
     unsafe {
-        // let heap_start = &_heap_start as *const u8 as usize;
-        // let heap_end = &_heap_end as *const u8 as usize;
+        const REQUESTED_HEAP_SIZE: usize = usize::pow(2, 4);
         let heap_size = _heap_end - _heap_start;
-        HEAP.init(_heap_start, heap_size);
+        if REQUESTED_HEAP_SIZE > heap_size {
+            panic!("Error : trying to allocate too muck heap.");
+        }
+        HEAP.init(_heap_start, REQUESTED_HEAP_SIZE);
     }
 
     let mut buffer = Buffer::new();
@@ -85,9 +87,7 @@ pub fn main() {
         &mut empty_module3 as &mut dyn Module,
         &mut empty_module4 as &mut dyn Module,
     ];
-    let mut scene = Scene::new(&mut modules, Vec2 { x: 1., y: 1. }, 3.);
-
-    let menu = Menu::new();
+    let scene = Scene::new(&mut modules, Vec2 { x: 1., y: 1. }, 3.);
 
     let mut game = Game {
         state: GameState::InGame(scene),

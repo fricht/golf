@@ -30,19 +30,38 @@ pub static EADK_APP_API_LEVEL: u32 = 0;
 
 #[used]
 #[link_section = ".rodata.eadk_app_icon"]
-pub static EADK_APP_ICON: [u8; 4250] = *include_bytes!("../target/icon.nwi");
+pub static EADK_APP_ICON: [u8; 4250] = [0; 4250]; // *include_bytes!("../target/icon.nwi");
 
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
+
+// what am i doing ...
+#[no_mangle]
+pub extern "C" fn _critical_section_1_0_acquire() {
+    // Do nothing if you don't need concurrency protection
+}
+#[no_mangle]
+pub extern "C" fn _critical_section_1_0_release() {
+    // Do nothing if you don't need concurrency protection
+}
+#[no_mangle]
+pub extern "C" fn __aeabi_unwind_cpp_pr0() {
+    // Do nothing if you don't need concurrency protection
+}
+#[alloc_error_handler]
+fn alloc_error_handler(layout: core::alloc::Layout) -> ! {
+    // You can define custom logic here, like logging the error or resetting the device.
+    panic!("allocation error: {:?}", layout);
+}
 
 #[no_mangle]
 pub fn main() {
     // initialize the memory allocator
     unsafe {
-        let heap_start = &_heap_start as *const u8 as usize;
-        let heap_end = &_heap_end as *const u8 as usize;
-        let heap_size = heap_end - heap_start;
-        HEAP.init(heap_start, heap_size);
+        // let heap_start = &_heap_start as *const u8 as usize;
+        // let heap_end = &_heap_end as *const u8 as usize;
+        let heap_size = _heap_end - _heap_start;
+        HEAP.init(_heap_start, heap_size);
     }
 
     let mut buffer = Buffer::new();
@@ -71,7 +90,7 @@ pub fn main() {
     let menu = Menu::new();
 
     let mut game = Game {
-        state: GameState::InMenu(menu),
+        state: GameState::InGame(scene),
     };
 
     // game loop

@@ -1,7 +1,7 @@
 // heap
 extern "C" {
-    pub static _heap_start: u8;
-    pub static _heap_end: u8;
+    pub static _heap_start: usize;
+    pub static _heap_end: usize;
 }
 
 #[repr(C)]

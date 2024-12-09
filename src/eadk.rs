@@ -1,4 +1,4 @@
-use crate::escher::text::get_char_data;
+use crate::escher::text::{draw_debug_text, get_char_data};
 use core::panic::PanicInfo;
 use display::{push_rect, SCREEN_HEIGHT, SCREEN_WIDTH};
 
@@ -443,7 +443,6 @@ pub mod input {
 
 #[panic_handler]
 fn panic(panic_info: &PanicInfo<'_>) -> ! {
-    // TODO : ths is trash. Do a text renderer to display the actual err message.
     display::push_rect_uniform(
         Rect {
             x: 0,
@@ -453,22 +452,21 @@ fn panic(panic_info: &PanicInfo<'_>) -> ! {
         },
         Color { rgb565: 0xF800 },
     );
-    if let Some(msg) = panic_info.message().as_str() {
-        let mut char: [Color; 8] = [Color { rgb565: 0 }; 8];
-        let mut i = 0;
-        for c in msg.chars() {
-            let c = c as u8;
-            push_rect(
-                Rect {
-                    x: i * 6 + 10,
-                    y: 10,
-                    width: 5,
-                    height: 10,
-                },
-                get_char_data(&c),
-            );
-            i += 1;
-        }
-    }
+    let (_, mut y) = draw_debug_text(
+        panic_info.message().as_str().unwrap_or("no error message"),
+        (1, 1),
+    );
+    let mut x = 1;
+    y += 11;
+    (x, y) = draw_debug_text("File : ", (x, y));
+    let (file, row, col) = match panic_info.location() {
+        None => ("no file", "no row", "no col"),
+        Some(loc) => (loc.file(), "no_line", "no_col"),
+    };
+    (x, y) = draw_debug_text(file, (x, y));
+    (x, y) = draw_debug_text(" ", (x, y));
+    (x, y) = draw_debug_text(row, (x, y));
+    (x, y) = draw_debug_text(":", (x, y));
+    draw_debug_text(col, (x, y));
     loop {}
 }

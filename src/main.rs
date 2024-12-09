@@ -11,7 +11,7 @@ pub mod golf;
 pub mod graphics;
 pub mod math;
 
-use alloc::boxed::Box;
+use alloc::{boxed::Box, string::ToString};
 use eadk::{_heap_end, _heap_start};
 use embedded_alloc::TlsfHeap as Heap;
 use game::{Game, GameState};
@@ -41,10 +41,10 @@ static HEAP: Heap = Heap::empty();
 pub fn main() {
     // initialize the memory allocator
     unsafe {
-        const REQUESTED_HEAP_SIZE: usize = 2 << 8;
+        const REQUESTED_HEAP_SIZE: usize = 2 << 1;
         let heap_size = _heap_end - _heap_start;
         if REQUESTED_HEAP_SIZE > heap_size {
-            panic!("Error : trying to allocate too muck heap.");
+            panic!("Error : trying to allocate too muck heap (MAX ...).");
         }
         HEAP.init(_heap_start, REQUESTED_HEAP_SIZE);
     }

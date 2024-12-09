@@ -1,5 +1,6 @@
 use super::{Component, UiEvent};
 use crate::alloc::boxed::Box;
+use crate::eadk::display::push_rect;
 use crate::{
     eadk::{display::SCREEN_HEIGHT, Color, Rect},
     graphics::Buffer,
@@ -9,18 +10,19 @@ use crate::{
 const W: u16 = 0xFFFF;
 const B: u16 = 0x0;
 
-const CHARS_RAW_DATA: [u16; 29 * CHAR_SIZE] = [
+const CHARS_COUNT: usize = 44;
+const CHARS_RAW_DATA: [u16; CHARS_COUNT * CHAR_SIZE] = [
     // NULL
-    B, B, B, B, B, //
-    B, B, B, B, B, //
-    B, B, B, B, B, //
-    B, B, B, B, B, //
-    B, B, B, B, B, //
-    B, B, B, B, B, //
-    B, B, B, B, B, //
-    B, B, B, B, B, //
-    B, B, B, B, B, //
-    B, B, B, B, B, //
+    B, B, W, B, B, //
+    B, W, W, W, B, //
+    W, W, W, W, W, //
+    W, W, W, W, W, //
+    W, W, W, W, W, //
+    W, W, W, W, W, //
+    W, W, W, W, W, //
+    W, W, W, W, W, //
+    B, W, W, W, B, //
+    B, B, W, B, B, //
     // a
     B, B, W, B, B, //
     B, W, B, W, B, //
@@ -318,6 +320,17 @@ const CHARS_RAW_DATA: [u16; 29 * CHAR_SIZE] = [
     B, B, B, B, B, //
     B, B, B, B, B, //
     B, B, B, B, B, //
+    // .
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, W, W, B, //
+    B, B, W, W, B, //
     // :
     B, B, B, B, B, //
     B, B, B, B, B, //
@@ -329,14 +342,168 @@ const CHARS_RAW_DATA: [u16; 29 * CHAR_SIZE] = [
     B, B, W, B, B, //
     B, B, B, B, B, //
     B, B, B, B, B, //
+    // 0
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, W, B, W, //
+    W, B, W, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // 1
+    B, B, B, B, W, //
+    B, B, B, W, W, //
+    B, W, W, B, W, //
+    W, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    // 2
+    B, W, W, W, B, //
+    B, W, B, B, W, //
+    W, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, W, B, //
+    B, B, W, B, B, //
+    B, W, B, B, B, //
+    W, B, B, B, B, //
+    W, W, W, W, W, //
+    // 3
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, W, W, B, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // 4
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, W, W, W, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    // 5
+    W, W, W, W, W, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, W, W, W, B, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // 6
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // 7
+    W, W, W, W, W, //
+    W, B, B, B, B, //
+    B, W, B, B, B, //
+    B, W, B, B, B, //
+    B, B, W, W, W, //
+    B, B, W, B, B, //
+    B, B, B, W, B, //
+    B, B, B, W, B, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    // 8
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // 9
+    B, W, W, W, B, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, W, //
+    B, W, W, W, B, //
+    // (
+    B, B, B, W, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, W, B, B, B, //
+    B, W, B, B, B, //
+    B, W, B, B, B, //
+    B, W, B, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, B, W, B, //
+    // )
+    B, W, B, B, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, B, B, W, B, //
+    B, B, B, W, B, //
+    B, B, B, W, B, //
+    B, B, B, W, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, W, B, B, B, //
+    // /
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, W, B, //
+    B, B, B, W, B, //
+    B, B, W, B, B, //
+    B, B, W, B, B, //
+    B, W, B, B, B, //
+    B, W, B, B, B, //
+    W, B, B, B, B, //
+    W, B, B, B, B, //
+    // _
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    W, W, W, W, W, //
 ];
 
 const CHAR_COLORKEY: Color = Color { rgb565: 0xFFFF };
 const CHAR_SIZE: usize = 5 * 10;
-const CHARS: [Color; 29 * CHAR_SIZE] = build_colors(CHARS_RAW_DATA);
+const CHARS: [Color; CHARS_COUNT * CHAR_SIZE] = build_colors(CHARS_RAW_DATA);
 
-const fn build_colors(data: [u16; 29 * CHAR_SIZE]) -> [Color; 29 * CHAR_SIZE] {
-    let mut colors = [Color { rgb565: 0 }; 29 * CHAR_SIZE];
+const fn build_colors(data: [u16; CHARS_COUNT * CHAR_SIZE]) -> [Color; CHARS_COUNT * CHAR_SIZE] {
+    let mut colors = [Color { rgb565: 0 }; CHARS_COUNT * CHAR_SIZE];
     let mut i = 0;
     while i < data.len() {
         colors[i] = Color { rgb565: data[i] };
@@ -374,10 +541,48 @@ pub fn get_char_data(char: &u8) -> &[Color] {
         b'y' | b'Y' => 25,
         b'z' | b'Z' => 26,
         b' ' => 27,
-        b':' => 28,
+        b'.' => 28,
+        b':' => 29,
+        b'0' => 30,
+        b'1' => 31,
+        b'2' => 32,
+        b'3' => 33,
+        b'4' => 34,
+        b'5' => 35,
+        b'6' => 36,
+        b'7' => 37,
+        b'8' => 38,
+        b'9' => 39,
+        b'(' => 40,
+        b')' => 41,
+        b'/' => 42,
+        b'_' => 43,
         _ => 0,
     };
     &CHARS[(i * CHAR_SIZE)..((i + 1) * CHAR_SIZE)]
+}
+
+/// draw ugly text to the screen (for debug purposes) and returns new cursor position
+pub fn draw_debug_text(txt: &str, offset: (u16, u16)) -> (u16, u16) {
+    let (mut x, mut y) = offset;
+    for c in txt.chars() {
+        let c = c as u8;
+        push_rect(
+            Rect {
+                x,
+                y,
+                width: 5,
+                height: 10,
+            },
+            get_char_data(&c),
+        );
+        x += 6;
+        if x > 314 {
+            x = 0;
+            y += 11;
+        }
+    }
+    (x, y)
 }
 
 pub struct Label {

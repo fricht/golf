@@ -12,8 +12,10 @@ pub mod graphics;
 pub mod math;
 
 use alloc::{boxed::Box, string::ToString};
-use eadk::{_heap_end, _heap_start};
+use core::str;
+use eadk::{_heap_end, _heap_start, int_to_str};
 use embedded_alloc::TlsfHeap as Heap;
+use escher::text::{draw_debug_text, draw_uint};
 use game::{Game, GameState};
 use golf::*;
 use graphics::Buffer;
@@ -41,10 +43,33 @@ static HEAP: Heap = Heap::empty();
 pub fn main() {
     // initialize the memory allocator
     unsafe {
-        const REQUESTED_HEAP_SIZE: usize = 2 << 1;
+        const REQUESTED_HEAP_SIZE: usize = 2 << 31;
         let heap_size = _heap_end - _heap_start;
+        eadk::display::push_rect_uniform(
+            eadk::Rect {
+                x: 0,
+                y: 0,
+                width: 320,
+                height: 240,
+            },
+            eadk::Color { rgb565: 0x0 },
+        );
+        let (mut bytes_start, mut bytes_end, mut bytes_size) = ([0x20; 20], [0x20; 20], [0x20; 20]);
+        int_to_str(_heap_start, &mut bytes_start);
+        int_to_str(_heap_end, &mut bytes_end);
+        int_to_str(heap_size, &mut bytes_size);
+        draw_debug_text("start :", (1, 1));
+        draw_debug_text(str::from_utf8(&bytes_start).unwrap(), (49, 1));
+        // draw_uint(_heap_start, (49, 1));
+        draw_debug_text("end :", (1, 12));
+        draw_debug_text(str::from_utf8(&bytes_end).unwrap(), (49, 12));
+        // draw_uint(_heap_end, (49, 12));
+        draw_debug_text("size :", (1, 23));
+        draw_debug_text(str::from_utf8(&bytes_size).unwrap(), (49, 23));
+        // draw_uint(heap_size, (49, 23));
+        eadk::timing::msleep(5000);
         if REQUESTED_HEAP_SIZE > heap_size {
-            panic!("Error : trying to allocate too muck heap (MAX ...).");
+            panic!("Error : trying to allocate too much heap (MAX ...)");
         }
         HEAP.init(_heap_start, REQUESTED_HEAP_SIZE);
     }

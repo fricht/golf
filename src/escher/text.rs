@@ -10,7 +10,7 @@ use crate::{
 const W: u16 = 0xFFFF;
 const B: u16 = 0x0;
 
-const CHARS_COUNT: usize = 44;
+const CHARS_COUNT: usize = 46;
 const CHARS_RAW_DATA: [u16; CHARS_COUNT * CHAR_SIZE] = [
     // NULL
     B, B, W, B, B, //
@@ -447,9 +447,9 @@ const CHARS_RAW_DATA: [u16; CHARS_COUNT * CHAR_SIZE] = [
     W, B, B, B, W, //
     W, B, B, B, W, //
     B, W, W, W, B, //
-    W, B, B, B, B, //
-    W, B, B, B, B, //
-    W, B, B, B, B, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
+    B, B, B, B, W, //
     W, B, B, B, W, //
     B, W, W, W, B, //
     // (
@@ -496,9 +496,31 @@ const CHARS_RAW_DATA: [u16; CHARS_COUNT * CHAR_SIZE] = [
     B, B, B, B, B, //
     B, B, B, B, B, //
     W, W, W, W, W, //
+    // =
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    W, W, W, W, W, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    W, W, W, W, W, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    // ,
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, B, B, B, //
+    B, B, W, W, B, //
+    B, B, W, W, B, //
+    B, W, W, B, B, //
 ];
 
-const CHAR_COLORKEY: Color = Color { rgb565: 0xFFFF };
+const CHAR_COLORKEY: Color = Color { rgb565: 0x0 };
 const CHAR_SIZE: usize = 5 * 10;
 const CHARS: [Color; CHARS_COUNT * CHAR_SIZE] = build_colors(CHARS_RAW_DATA);
 
@@ -557,6 +579,8 @@ pub fn get_char_data(char: &u8) -> &[Color] {
         b')' => 41,
         b'/' => 42,
         b'_' => 43,
+        b'=' => 44,
+        b',' => 45,
         _ => 0,
     };
     &CHARS[(i * CHAR_SIZE)..((i + 1) * CHAR_SIZE)]
@@ -576,6 +600,35 @@ pub fn draw_debug_text(txt: &str, offset: (u16, u16)) -> (u16, u16) {
             },
             get_char_data(&c),
         );
+        x += 6;
+        if x > 314 {
+            x = 0;
+            y += 11;
+        }
+    }
+    (x, y)
+}
+
+// TODO : remove this (useless)
+/// draws a char without using heap (debug)
+pub fn draw_uint(int: usize, offset: (u16, u16)) -> (u16, u16) {
+    let (mut x, mut y) = offset;
+    let mut num = int;
+    loop {
+        let c = b'0' + (num % 10) as u8;
+        push_rect(
+            Rect {
+                x,
+                y,
+                width: 5,
+                height: 10,
+            },
+            get_char_data(&c),
+        );
+        num /= 10;
+        if num == 0 {
+            break;
+        }
         x += 6;
         if x > 314 {
             x = 0;

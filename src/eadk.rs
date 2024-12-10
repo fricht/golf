@@ -1,6 +1,7 @@
-use crate::escher::text::{draw_debug_text, get_char_data};
-use core::panic::PanicInfo;
+use crate::escher::text::{draw_debug_text, draw_uint, get_char_data};
+use core::{panic::PanicInfo, str};
 use display::{push_rect, SCREEN_HEIGHT, SCREEN_WIDTH};
+use timing::msleep;
 
 // heap
 extern "C" {
@@ -22,7 +23,30 @@ pub extern "C" fn __aeabi_unwind_cpp_pr0() {
 }
 #[alloc_error_handler]
 fn alloc_error_handler(layout: core::alloc::Layout) -> ! {
-    panic!("allocation error: {:?}", layout);
+    let mut bytes_size = [0x20; 20];
+    let mut bytes_align = [0x20; 20];
+    int_to_str(layout.size(), &mut bytes_size);
+    int_to_str(layout.align(), &mut bytes_align);
+    // "allocation error : size = .........., align = .........."
+    let mut full = [
+        97, 108, 108, 111, 99, 97, 116, 105, 111, 110, 32, 101, 114, 114, 111, 114, 32, 58, 32,
+        115, 105, 122, 101, 32, 61, 32, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46, 44, 32, 97, 108,
+        105, 103, 110, 32, 61, 32, 46, 46, 46, 46, 46, 46, 46, 46, 46, 46,
+    ];
+    display::push_rect_uniform(
+        Rect {
+            x: 0,
+            y: 0,
+            width: 320,
+            height: 240,
+        },
+        Color { rgb565: 0x0 },
+    );
+    full[26..36].copy_from_slice(&bytes_size[10..]);
+    full[46..56].copy_from_slice(&bytes_align[10..]);
+    draw_debug_text(str::from_utf8(&full).unwrap(), (1, 1));
+    msleep(5000);
+    panic!("allocation error (fuck panic macro)");
 }
 
 #[repr(C)]
@@ -441,6 +465,20 @@ pub mod input {
     }
 }
 
+pub fn int_to_str(int: usize, string: &mut [u8]) {
+    let mut num = int;
+    let mut pos = 19;
+    loop {
+        let c = b'0' + (num % 10) as u8;
+        string[pos] = c;
+        pos -= 1;
+        num /= 10;
+        if num == 0 {
+            break;
+        }
+    }
+}
+
 #[panic_handler]
 fn panic(panic_info: &PanicInfo<'_>) -> ! {
     display::push_rect_uniform(
@@ -459,9 +497,20 @@ fn panic(panic_info: &PanicInfo<'_>) -> ! {
     let mut x = 1;
     y += 11;
     (x, y) = draw_debug_text("File : ", (x, y));
+    let (mut bytes_row, mut bytes_col) = ([0x20; 20], [0x20; 20]);
     let (file, row, col) = match panic_info.location() {
         None => ("no file", "no row", "no col"),
-        Some(loc) => (loc.file(), "no_line", "no_col"),
+        Some(loc) => (
+            loc.file(),
+            {
+                int_to_str(loc.line() as usize, &mut bytes_row);
+                str::from_utf8(&bytes_row[10..]).unwrap()
+            },
+            {
+                int_to_str(loc.column() as usize, &mut bytes_col);
+                str::from_utf8(&bytes_col[10..]).unwrap()
+            },
+        ),
     };
     (x, y) = draw_debug_text(file, (x, y));
     (x, y) = draw_debug_text(" ", (x, y));

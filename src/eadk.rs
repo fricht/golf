@@ -1,6 +1,6 @@
-use crate::escher::text::{draw_debug_text, draw_uint, get_char_data};
+use crate::escher::text::draw_debug_text;
 use core::{panic::PanicInfo, str};
-use display::{push_rect, SCREEN_HEIGHT, SCREEN_WIDTH};
+use display::{SCREEN_HEIGHT, SCREEN_WIDTH};
 use timing::msleep;
 
 // heap

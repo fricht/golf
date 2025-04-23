@@ -1,6 +1,6 @@
 // re exports
 pub mod ball;
 pub mod game;
+pub mod game_over;
 pub mod module;
-pub mod scene;
-pub mod ui;
+pub mod popup;

@@ -1,19 +1,31 @@
 [package]
-name = "Golf"
-version = "0.1.0"
-edition = "2021"
+name = "golf"
+edition = "2024"
+
+[build-dependencies]
+nwi_compress = { path = "nwi_compress" }
 
 [profile.dev]
 opt-level = 3
 debug = false
-overflow-checks = false
-panic = "abort"
+overflow-checks = true
 
 [profile.release]
 opt-level = 3
 debug = false
 overflow-checks = false
-panic = "abort"
 
 [dependencies]
 embedded-alloc = "0.6.0"
+libm = "0.2.11"
+libnw = { path = "libnw" }
+graphmgr = { path = "graphmgr" }
+
+[[bin]]
+name = "golf"
+test = false
+bench = false
+
+[lib]
+test = false
+bench = false

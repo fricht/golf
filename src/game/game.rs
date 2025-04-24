@@ -108,15 +108,20 @@ impl State<PopMessage> for GameState {
                 }
             }
             false => {
+                let move_speed = if keyboard_state.is_key_pressed(RawKey::Shift) {
+                    0.015
+                } else {
+                    0.03
+                };
                 self.ball.move_launch(Vec2::<f32> {
                     x: ((keyboard_state.is_key_pressed(RawKey::Right) as i8)
                         - (keyboard_state.is_key_pressed(RawKey::Left) as i8))
                         as f32
-                        * 0.04,
+                        * move_speed,
                     y: ((keyboard_state.is_key_pressed(RawKey::Down) as i8)
                         - (keyboard_state.is_key_pressed(RawKey::Up) as i8))
                         as f32
-                        * 0.04,
+                        * move_speed,
                 });
                 if (keyboard_state.is_key_just_pressed(RawKey::Ok)
                     || keyboard_state.is_key_just_pressed(RawKey::Exe))

@@ -16,7 +16,7 @@ pub enum BallInteraction {
 
 pub trait Module {
     fn update(&mut self, ball: &mut Ball) -> BallInteraction;
-    fn render(&self, cam_pos: &Vec2<f32>, unit_size: i32);
+    fn render(&self, cam_pos: &Vec2<f32>, unit_size: i32, is_first_half: bool);
 }
 
 // the size of 1 module tile : the ball have a radius of 1 (diameter of 2)
@@ -52,17 +52,18 @@ impl Module for EmptyModule {
         BallInteraction::In(0.98)
     }
 
-    fn render(&self, offset: &Vec2<f32>, unit_size: i32) {
+    fn render(&self, offset: &Vec2<f32>, unit_size: i32, is_first_half: bool) {
         for x in 0..self.size.x {
             for y in 0..self.size.y {
                 display::eadk::push_rect_uniform(
-                    Rect::screen_space_clipping(
+                    Rect::half_screen_space_clipping(
                         x * unit_size * TILE_SIZE as i32 - offset.x as i32
                             + self.pos.x as i32 * unit_size,
                         y * unit_size * TILE_SIZE as i32 - offset.y as i32
                             + self.pos.y as i32 * unit_size,
                         unit_size as u16 * TILE_SIZE,
                         unit_size as u16 * TILE_SIZE,
+                        is_first_half,
                     ),
                     Color::new(if (x + y) % 2 == 0 { 0x0640 } else { 0x0580 }),
                 );
@@ -103,17 +104,18 @@ impl Module for SquareEndModule {
         }
     }
 
-    fn render(&self, offset: &Vec2<f32>, unit_size: i32) {
+    fn render(&self, offset: &Vec2<f32>, unit_size: i32, is_first_half: bool) {
         for x in 0..4 {
             for y in 0..4 {
                 display::eadk::push_rect_uniform(
-                    Rect::screen_space_clipping(
+                    Rect::half_screen_space_clipping(
                         x * unit_size * TILE_SIZE as i32 - offset.x as i32
                             + self.pos.x as i32 * unit_size,
                         y * unit_size * TILE_SIZE as i32 - offset.y as i32
                             + self.pos.y as i32 * unit_size,
                         unit_size as u16 * TILE_SIZE,
                         unit_size as u16 * TILE_SIZE,
+                        is_first_half,
                     ),
                     Color::new(if (x + y) % 2 == 0 { 0x0640 } else { 0x0580 }),
                 );

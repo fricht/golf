@@ -19,6 +19,10 @@ use alloc::{borrow::Cow, string::String, vec::Vec};
 pub const SCREEN_WIDTH: u16 = 320;
 /// The height of the screen in pixels.
 pub const SCREEN_HEIGHT: u16 = 240;
+/// The half width of the screen in pixels.
+pub const HALF_SCREEN_WIDTH: u16 = SCREEN_WIDTH / 2;
+/// The half height of the screen in pixels.
+pub const HALF_SCREEN_HEIGHT: u16 = SCREEN_HEIGHT / 2;
 /// The number of pixels on the screen.
 pub const SCREEN_AREA: usize = SCREEN_WIDTH as usize * SCREEN_HEIGHT as usize;
 /// The width of one char of the standard font in pixels.
@@ -61,6 +65,36 @@ impl Rect {
             y,
             width: ex - x,
             height: ey - y,
+        }
+    }
+
+    pub fn half_screen_space_clipping(
+        x: i32,
+        y: i32,
+        width: u16,
+        height: u16,
+        is_first_half: bool,
+    ) -> Self {
+        let y = y.clamp(0, SCREEN_HEIGHT as i32) as u16;
+        let ey = (y + height).clamp(0, SCREEN_HEIGHT);
+        if is_first_half {
+            let x = x.clamp(0, HALF_SCREEN_WIDTH as i32) as u16;
+            let ex = (x + width).clamp(0, HALF_SCREEN_WIDTH);
+            Self {
+                x,
+                y,
+                width: ex - x,
+                height: ey - y,
+            }
+        } else {
+            let x = x.clamp(HALF_SCREEN_WIDTH as i32, SCREEN_WIDTH as i32) as u16;
+            let ex = (x + width).clamp(HALF_SCREEN_WIDTH, SCREEN_WIDTH);
+            Self {
+                x,
+                y,
+                width: ex - x,
+                height: ey - y,
+            }
         }
     }
 
@@ -113,6 +147,22 @@ impl Rect {
     /// The rectangle the size of the screen.
     pub const SCREEN: Self = Self {
         x: 0,
+        y: 0,
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT,
+    };
+
+    /// The rectangle the size of the first half of the screen.
+    pub const FIRST_HALF_SCREEN: Self = Self {
+        x: 0,
+        y: 0,
+        width: HALF_SCREEN_WIDTH,
+        height: SCREEN_HEIGHT,
+    };
+
+    /// The rectangle the size of the first half of the screen.
+    pub const SECOND_HALF_SCREEN: Self = Self {
+        x: HALF_SCREEN_WIDTH,
         y: 0,
         width: SCREEN_WIDTH,
         height: SCREEN_HEIGHT,

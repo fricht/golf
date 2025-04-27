@@ -21,7 +21,6 @@ pub struct GameState {
     ball: Ball,
     attempts: u8,
     unit_size: u8,
-    frame_parity: bool, // i don't care about overflows, i only want the parity of the number
 }
 
 const CAM_OFFSET: Vec2<f32> = Vec2 {
@@ -40,7 +39,6 @@ impl GameState {
             ball,
             attempts: 0,
             unit_size: 3,
-            frame_parity: true,
         }
     }
 }
@@ -145,14 +143,38 @@ impl State<PopMessage> for GameState {
 
     fn render(&mut self) {
         display::eadk::wait_for_vblank();
-        if self.frame_parity {
-            display::eadk::push_rect_uniform(Rect::FIRST_HALF_SCREEN, Color::RED);
-        } else {
-            display::eadk::push_rect_uniform(Rect::SECOND_HALF_SCREEN, Color::BLUE);
+        const SCREEN_CHUNKS: [Rect; 48] = {
+            let mut rects = [Rect {
+                x: 0,
+                y: 0,
+                width: 40,
+                height: 40,
+            }; 48];
+            let mut i = 0;
+            let mut y = 0;
+            while y < 240 {
+                let mut x = 0;
+                while x < 320 {
+                    rects[i] = Rect {
+                        x,
+                        y,
+                        width: 40,
+                        height: 40,
+                    };
+                    i += 1;
+                    x += 40;
+                }
+                y += 40;
+            }
+            rects
+        };
+        // display::eadk::push_rect_uniform(Rect::SCREEN, Color::new(0x07E0));
+        for rect in SCREEN_CHUNKS.iter() {
+            rect.fill(Color::GREEN);
         }
         // draw modules
         for m in self.modules.iter() {
-            m.render(&self.cam_pos, self.unit_size as i32, self.frame_parity);
+            m.render(&self.cam_pos, self.unit_size as i32);
         }
         // draw ball
         self.ball
@@ -166,7 +188,5 @@ impl State<PopMessage> for GameState {
             Color::BLACK,
             Color::GREEN,
         );
-        // increment frame parity
-        self.frame_parity = !self.frame_parity;
     }
 }

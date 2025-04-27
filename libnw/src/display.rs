@@ -163,6 +163,12 @@ impl Color {
     pub const GREEN: Self = Self(0x7E0);
     /// Pure blue (0, 0, 255)
     pub const BLUE: Self = Self(0x1F);
+    /// Pure yellow (255, 255, 0)
+    pub const YELLOW: Self = Self(0xFFE0);
+    /// Pure cyan (0, 255, 255)
+    pub const CYAN: Self = Self(0x07FF);
+    /// Pure magenta (255, 0, 255)
+    pub const MAGENTA: Self = Self(0xF81F);
 }
 
 /// Returns the pixels' color in the given rect.

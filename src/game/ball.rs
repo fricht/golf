@@ -54,23 +54,50 @@ impl Ball {
 
         // using method 2 bc easyer & faster to implement
         // ball radius : 1 unit
-        let ball_pos = &(&(&self.pos * unit_size as f32) - offset).to_int()
-            - &Vec2 {
-                x: unit_size / 2,
-                y: unit_size / 2,
-            };
-        for x in (ball_pos.x).max(0)..(ball_pos.x + unit_size).min(SCREEN_WIDTH as i32) {
-            for y in (ball_pos.y).max(0)..(ball_pos.y + unit_size).min(SCREEN_WIDTH as i32) {
-                display::set_pixel(x as u16, y as u16, Color::WHITE);
+        let raw_ball_pos = &(&self.pos * unit_size as f32) - offset;
+        let ball_pos = raw_ball_pos.to_int();
+        let squared_unit_size = unit_size * unit_size;
+        for x in
+            (ball_pos.x - unit_size).max(0)..(ball_pos.x + unit_size + 1).min(SCREEN_WIDTH as i32)
+        {
+            for y in (ball_pos.y - unit_size).max(0)
+                ..(ball_pos.y + unit_size + 1).min(SCREEN_WIDTH as i32)
+            {
+                if ((x - ball_pos.x).pow(2) + (y - ball_pos.y).pow(2)) <= squared_unit_size {
+                    display::set_pixel(x as u16, y as u16, Color::WHITE);
+                }
             }
         }
         if render_launch && self.launch_vec.norm_sqd() > 0.01 {
-            let club_pos = (&(&(&self.pos * unit_size as f32) - offset)
-                + &(&self.launch_vec * CLUB_DISTANCE))
-                .to_int();
+            // // draw launch range (method 1 bc needs transparency)
+            // // WARNING : might crash if circle clipping outside on screen
+            // // does not work
+            // let club_dist = CLUB_DISTANCE as i32;
+            // let rect_length = 2 * club_dist;
+            // let rect = Rect::new_square(
+            //     (ball_pos.x - club_dist) as u16,
+            //     (ball_pos.y - club_dist) as u16,
+            //     rect_length as u16,
+            // );
+            // let mut background = display::get_rect(rect.clone());
+            // for x in 0..(2 * club_dist) {
+            //     for y in 0..(2 * club_dist) {
+            //         let index = (x + y * rect_length) as usize;
+            //         let mut col = background[index].separate_rgb();
+            //         col.0 += 100;
+            //         col.1 += 100;
+            //         col.2 += 100;
+            //         background[index] = Color::from_rgb(col.0, col.1, col.2);
+            //     }
+            // }
+            // unsafe {
+            //     display::eadk::push_rect(rect, background.as_ptr());
+            // }
+            // draw club
+            let club_pos = (&raw_ball_pos + &(&self.launch_vec * CLUB_DISTANCE)).to_int();
             display::eadk::push_rect_uniform(
                 Rect::screen_space_clipping(club_pos.x - 1, club_pos.y - 1, 3, 3),
-                Color::BLUE,
+                Color::MAGENTA,
             );
         }
     }

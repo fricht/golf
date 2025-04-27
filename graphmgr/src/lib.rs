@@ -23,7 +23,7 @@ pub enum StackAction<M = ()> {
 /// (too basic, todo : make it better)
 /// ```
 /// let mut state_mgr = StateManager::<()>::new();
-/// state_mgr.run(Box::new(MyState::new()));
+/// state_mgr.run(Box::new(MyState::new()), 60);
 /// ```
 pub struct StateManager<M = ()> {
     stack: Vec<Box<dyn State<M>>>,

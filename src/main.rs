@@ -7,7 +7,7 @@ use golf::{self, ExitBehaviour};
 /// Defines the name of the application.
 #[used]
 #[unsafe(link_section = ".rodata.eadk_app_name")]
-static EADK_APP_NAME: [u8; 7] = *b"My app\0";
+static EADK_APP_NAME: [u8; 5] = *b"Golf\0";
 
 /// Defines the icon of the application.
 #[used]

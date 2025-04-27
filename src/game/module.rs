@@ -1,6 +1,6 @@
 use libnw::display::{self, Color, Rect};
 
-use super::ball::Ball;
+use super::{ball::Ball, game::CLEAR_COLOR};
 use crate::utils::vec::Vec2;
 
 pub enum BallInteraction {
@@ -16,7 +16,8 @@ pub enum BallInteraction {
 
 pub trait Module {
     fn update(&mut self, ball: &mut Ball) -> BallInteraction;
-    fn render(&self, cam_pos: &Vec2<f32>, unit_size: i32);
+    fn render(&mut self, cam_pos: &Vec2<f32>, unit_size: i32);
+    fn erase(&self);
 }
 
 // the size of 1 module tile : the ball have a radius of 1 (diameter of 2)
@@ -25,6 +26,7 @@ pub const TILE_SIZE: u16 = 4;
 pub struct EmptyModule {
     pos: Vec2<i32>,
     size: Vec2<i32>,
+    old_pos: Rect,
 }
 
 impl EmptyModule {
@@ -35,6 +37,7 @@ impl EmptyModule {
                 x: size_x,
                 y: size_y,
             },
+            old_pos: Rect::new(0, 0, 0, 0),
         }
     }
 }
@@ -52,7 +55,13 @@ impl Module for EmptyModule {
         BallInteraction::In(0.98)
     }
 
-    fn render(&self, offset: &Vec2<f32>, unit_size: i32) {
+    fn render(&mut self, offset: &Vec2<f32>, unit_size: i32) {
+        self.old_pos = Rect::screen_space_clipping(
+            -offset.x as i32 + self.pos.x as i32 * unit_size,
+            -offset.y as i32 + self.pos.y as i32 * unit_size,
+            self.size.x as u16 * unit_size as u16 * TILE_SIZE,
+            self.size.y as u16 * unit_size as u16 * TILE_SIZE,
+        );
         for x in 0..self.size.x {
             for y in 0..self.size.y {
                 display::eadk::push_rect_uniform(
@@ -69,16 +78,24 @@ impl Module for EmptyModule {
             }
         }
     }
+
+    fn erase(&self) {
+        display::eadk::push_rect_uniform(self.old_pos, CLEAR_COLOR);
+    }
 }
 
 /// 4 × 4 Module (× TILE_SIZE (4))
 pub struct SquareEndModule {
     pos: Vec2<i32>,
+    old_pos: Rect,
 }
 
 impl SquareEndModule {
     pub fn new_4x4(offset: Vec2<i32>) -> Self {
-        SquareEndModule { pos: offset }
+        SquareEndModule {
+            pos: offset,
+            old_pos: Rect::new(0, 0, 0, 0),
+        }
     }
 }
 
@@ -103,7 +120,13 @@ impl Module for SquareEndModule {
         }
     }
 
-    fn render(&self, offset: &Vec2<f32>, unit_size: i32) {
+    fn render(&mut self, offset: &Vec2<f32>, unit_size: i32) {
+        self.old_pos = Rect::screen_space_clipping(
+            -offset.x as i32 + self.pos.x as i32 * unit_size,
+            -offset.y as i32 + self.pos.y as i32 * unit_size,
+            4 as u16 * unit_size as u16 * TILE_SIZE,
+            4 as u16 * unit_size as u16 * TILE_SIZE,
+        );
         for x in 0..4 {
             for y in 0..4 {
                 display::eadk::push_rect_uniform(
@@ -130,5 +153,9 @@ impl Module for SquareEndModule {
             ),
             Color::BLACK,
         );
+    }
+
+    fn erase(&self) {
+        display::eadk::push_rect_uniform(self.old_pos, CLEAR_COLOR);
     }
 }

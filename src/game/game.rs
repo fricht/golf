@@ -13,6 +13,8 @@ use libnw::{
     keyboard::RawKey,
 };
 
+pub const CLEAR_COLOR: Color = Color::GREEN;
+
 pub struct GameState {
     is_moving: bool,
     modules: Vec<Box<dyn Module>>,
@@ -44,7 +46,13 @@ impl GameState {
 }
 
 impl State<PopMessage> for GameState {
+    fn create(&mut self) -> StackAction<PopMessage> {
+        display::eadk::push_rect_uniform(Rect::SCREEN, CLEAR_COLOR);
+        StackAction::Nop
+    }
+
     fn resume(&mut self, pop_message: PopMessage) -> StackAction<PopMessage> {
+        display::eadk::push_rect_uniform(Rect::SCREEN, CLEAR_COLOR);
         if let PopMessage::OkBackPopupIsOk(true) = pop_message {
             StackAction::Pop(PopMessage::None)
         } else {
@@ -143,37 +151,23 @@ impl State<PopMessage> for GameState {
 
     fn render(&mut self) {
         display::eadk::wait_for_vblank();
-        const SCREEN_CHUNKS: [Rect; 48] = {
-            let mut rects = [Rect {
-                x: 0,
-                y: 0,
-                width: 40,
-                height: 40,
-            }; 48];
-            let mut i = 0;
-            let mut y = 0;
-            while y < 240 {
-                let mut x = 0;
-                while x < 320 {
-                    rects[i] = Rect {
-                        x,
-                        y,
-                        width: 40,
-                        height: 40,
-                    };
-                    i += 1;
-                    x += 40;
-                }
-                y += 40;
-            }
-            rects
+        // erase only (old) necessary stuff (to avoid re-drawing useless stuff (bg))
+        // erase score
+        const SCORE_RECT: Rect = Rect {
+            x: 0,
+            y: 0,
+            width: 12 * display::CHAR_WIDTH,
+            height: display::CHAR_HEIGHT,
         };
-        // display::eadk::push_rect_uniform(Rect::SCREEN, Color::new(0x07E0));
-        for rect in SCREEN_CHUNKS.iter() {
-            rect.fill(Color::GREEN);
+        display::eadk::push_rect_uniform(SCORE_RECT, CLEAR_COLOR);
+        // erase ball
+        self.ball.erase();
+        // erase modules
+        for m in self.modules.iter() {
+            m.erase();
         }
         // draw modules
-        for m in self.modules.iter() {
+        for m in self.modules.iter_mut() {
             m.render(&self.cam_pos, self.unit_size as i32);
         }
         // draw ball

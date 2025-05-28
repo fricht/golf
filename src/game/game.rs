@@ -13,6 +13,8 @@ use libnw::{
     keyboard::RawKey,
 };
 
+const CLEAR_COLOR: Color = Color(0x07E0);
+
 pub struct GameState {
     is_moving: bool,
     modules: Vec<Box<dyn Module>>,
@@ -59,7 +61,14 @@ impl State<PopMessage> for GameState {
         // change zoom
         let delta_zoom = (keyboard_state.is_key_just_pressed(RawKey::Plus) as i8)
             - (keyboard_state.is_key_just_pressed(RawKey::Minus) as i8);
-        self.unit_size = (self.unit_size as i8 + delta_zoom).clamp(1, 8) as u8;
+        if delta_zoom != 0 {
+            let u_s = self.unit_size as f32;
+            self.unit_size = (self.unit_size as i8 + delta_zoom).clamp(1, 8) as u8;
+            let cam_f = self.unit_size as f32 / u_s;
+            let mut tmp = &self.cam_pos + &CAM_OFFSET;
+            tmp.scale(cam_f);
+            self.cam_pos = &tmp - &CAM_OFFSET;
+        }
 
         let mut is_outside = true;
         let mut drags = Vec::<f32>::new();
@@ -143,35 +152,7 @@ impl State<PopMessage> for GameState {
 
     fn render(&mut self) {
         display::eadk::wait_for_vblank();
-        const SCREEN_CHUNKS: [Rect; 48] = {
-            let mut rects = [Rect {
-                x: 0,
-                y: 0,
-                width: 40,
-                height: 40,
-            }; 48];
-            let mut i = 0;
-            let mut y = 0;
-            while y < 240 {
-                let mut x = 0;
-                while x < 320 {
-                    rects[i] = Rect {
-                        x,
-                        y,
-                        width: 40,
-                        height: 40,
-                    };
-                    i += 1;
-                    x += 40;
-                }
-                y += 40;
-            }
-            rects
-        };
-        // display::eadk::push_rect_uniform(Rect::SCREEN, Color::new(0x07E0));
-        for rect in SCREEN_CHUNKS.iter() {
-            rect.fill(Color::GREEN);
-        }
+        display::eadk::push_rect_uniform(Rect::SCREEN, CLEAR_COLOR);
         // draw modules
         for m in self.modules.iter() {
             m.render(&self.cam_pos, self.unit_size as i32);
@@ -186,7 +167,7 @@ impl State<PopMessage> for GameState {
             0,
             false,
             Color::BLACK,
-            Color::GREEN,
+            CLEAR_COLOR,
         );
     }
 }

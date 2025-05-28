@@ -25,6 +25,6 @@ pub enum PopMessage {
 /// The core of the application logic
 pub fn main() -> ExitBehaviour {
     let mut state_mgr = StateManager::<PopMessage>::new();
-    state_mgr.run(Box::new(MainMenuState), 60);
+    state_mgr.run(Box::new(MainMenuState), 30);
     ExitBehaviour::Exit
 }

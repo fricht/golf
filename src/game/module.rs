@@ -57,10 +57,8 @@ impl Module for EmptyModule {
             for y in 0..self.size.y {
                 display::eadk::push_rect_uniform(
                     Rect::screen_space_clipping(
-                        x * unit_size * TILE_SIZE as i32 - offset.x as i32
-                            + self.pos.x as i32 * unit_size,
-                        y * unit_size * TILE_SIZE as i32 - offset.y as i32
-                            + self.pos.y as i32 * unit_size,
+                        x * unit_size * TILE_SIZE as i32 - offset.x as i32 + self.pos.x * unit_size,
+                        y * unit_size * TILE_SIZE as i32 - offset.y as i32 + self.pos.y * unit_size,
                         unit_size as u16 * TILE_SIZE,
                         unit_size as u16 * TILE_SIZE,
                     ),

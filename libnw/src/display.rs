@@ -52,15 +52,15 @@ impl Rect {
     }
 
     pub fn screen_space_clipping(x: i32, y: i32, width: u16, height: u16) -> Self {
-        let x = x.clamp(0, SCREEN_WIDTH as i32) as u16;
-        let y = y.clamp(0, SCREEN_HEIGHT as i32) as u16;
-        let ex = (x + width).clamp(0, SCREEN_WIDTH);
-        let ey = (y + height).clamp(0, SCREEN_HEIGHT);
+        let nx = x.clamp(0, SCREEN_WIDTH as i32) as u16;
+        let ny = y.clamp(0, SCREEN_HEIGHT as i32) as u16;
+        let ex = (x + width as i32).clamp(0, SCREEN_WIDTH as i32) as u16;
+        let ey = (y + height as i32).clamp(0, SCREEN_HEIGHT as i32) as u16;
         Self {
-            x,
-            y,
-            width: ex - x,
-            height: ey - y,
+            x: nx,
+            y: ny,
+            width: ex - nx,
+            height: ey - ny,
         }
     }
 
@@ -122,7 +122,7 @@ impl Rect {
 /// An RGB 5-6-5 color: 5 bits for red, 6 bits for green and 5 bits for blue.
 #[repr(transparent)]
 #[derive(Clone, Copy)]
-pub struct Color(u16);
+pub struct Color(pub u16);
 
 impl Color {
     /// Creates a color directly from a u16.

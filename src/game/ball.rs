@@ -6,7 +6,6 @@ const CLUB_DISTANCE: f32 = 60.;
 
 pub struct Ball {
     pub pos: Vec2<f32>,
-    pub height: f32,
     pub velocity: Vec2<f32>,
     pub launch_vec: Vec2<f32>,
 }
@@ -15,7 +14,6 @@ impl Ball {
     pub fn new(pos: Vec2<f32>) -> Self {
         Ball {
             pos,
-            height: 0.,
             velocity: Vec2 { x: 0., y: 0. },
             launch_vec: Vec2 { x: 0., y: 0. },
         }
@@ -23,7 +21,6 @@ impl Ball {
 
     pub fn reset(&mut self, pos: Vec2<f32>) {
         self.pos = pos;
-        self.height = 0.;
         self.velocity = Vec2 { x: 0., y: 0. };
         self.launch_vec = Vec2 { x: 0., y: 0. };
     }
@@ -69,30 +66,13 @@ impl Ball {
             }
         }
         if render_launch && self.launch_vec.norm_sqd() > 0.01 {
-            // // draw launch range (method 1 bc needs transparency)
-            // // WARNING : might crash if circle clipping outside on screen
-            // // does not work
-            // let club_dist = CLUB_DISTANCE as i32;
-            // let rect_length = 2 * club_dist;
-            // let rect = Rect::new_square(
-            //     (ball_pos.x - club_dist) as u16,
-            //     (ball_pos.y - club_dist) as u16,
-            //     rect_length as u16,
-            // );
-            // let mut background = display::get_rect(rect.clone());
-            // for x in 0..(2 * club_dist) {
-            //     for y in 0..(2 * club_dist) {
-            //         let index = (x + y * rect_length) as usize;
-            //         let mut col = background[index].separate_rgb();
-            //         col.0 += 100;
-            //         col.1 += 100;
-            //         col.2 += 100;
-            //         background[index] = Color::from_rgb(col.0, col.1, col.2);
-            //     }
-            // }
-            // unsafe {
-            //     display::eadk::push_rect(rect, background.as_ptr());
-            // }
+            // draw launch range
+            let ref_club_pos =
+                (&raw_ball_pos + &(&self.launch_vec.normalized() * CLUB_DISTANCE)).to_int();
+            display::eadk::push_rect_uniform(
+                Rect::screen_space_clipping(ref_club_pos.x - 1, ref_club_pos.y - 1, 3, 3),
+                Color::new(0xb5b6), // gray
+            );
             // draw club
             let club_pos = (&raw_ball_pos + &(&self.launch_vec * CLUB_DISTANCE)).to_int();
             display::eadk::push_rect_uniform(
